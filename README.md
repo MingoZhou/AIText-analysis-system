@@ -1,5 +1,5 @@
 # 策知
-
+![img.png](img.png)
 面向政策、标准、行业报告和资讯的本地采集与 AI 分析平台。当前采用轻量架构：
 
 - 后端：FastAPI + SQLAlchemy + SQLite + APScheduler
@@ -184,12 +184,16 @@ setx SMTP_SENDER_NAME "策知系统"
 ```powershell
 cd frontend
 npm run build
+npm run dev # 访问 http://localhost:5173/
 ```
 
 后端使用单 worker 运行：
 
 ```powershell
 cd backend
+# 1. 激活项目虚拟环境
+.\.venv\Scripts\Activate.ps1
+# 2. 启动服务
 python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
 ```
 
@@ -210,6 +214,7 @@ data/
 
 ```powershell
 cd backend
+
 python -m unittest discover -s tests -v
 
 cd ..\frontend

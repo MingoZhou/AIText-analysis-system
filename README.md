@@ -124,6 +124,59 @@ http://127.0.0.1:11434/v1
 
 供应商卡片支持拖动排序，顺序按账号保存在 SQLite。NVIDIA 的 `429/529/5xx` 和其他临时服务错误会自动按 1、2、4 秒退避重试；Moonshot 等提供商的 `400` 响应会显示上游返回的具体错误，而不是只显示通用 HTTP 链接。
 
+## 邮件通知配置（可选）
+
+注册验证码与采集通知依赖 SMTP 邮件。出于安全考虑，SMTP 凭据（邮箱、授权码）**不硬编码在代码中**，而是通过环境变量注入；未配置时邮件服务自动禁用，不影响系统其他功能。
+
+### 支持的环境变量
+
+| 环境变量 | 说明 | 默认值 |
+| --- | --- | --- |
+| `SMTP_ENABLED` | 是否启用邮件服务 | `false` |
+| `SMTP_HOST` | SMTP 服务器地址 | `smtp.qq.com` |
+| `SMTP_PORT` | SMTP 端口 | `465` |
+| `SMTP_USE_SSL` | 是否使用 SSL | `true` |
+| `SMTP_USERNAME` | 发件邮箱地址 | 空 |
+| `SMTP_PASSWORD` | SMTP 授权码（**非**邮箱登录密码） | 空 |
+| `SMTP_SENDER_NAME` | 发件人显示名称 | 策知系统 |
+
+### 获取 SMTP 授权码
+
+以 QQ 邮箱为例：登录邮箱 → **设置** → **账户** → 开启「SMTP 服务」→ 生成 16 位授权码（注意是授权码，不是登录密码）。
+
+其他常见邮箱的 SMTP 参数：
+
+| 邮箱 | host | 端口 | SSL |
+| --- | --- | --- | --- |
+| QQ 邮箱 | `smtp.qq.com` | 465 | 是 |
+| 163 邮箱 | `smtp.163.com` | 465 | 是 |
+| Gmail | `smtp.gmail.com` | 587 | 否（需应用专用密码） |
+| Outlook | `smtp-mail.outlook.com` | 587 | 否 |
+
+### 配置方式
+
+**方式一：当前终端临时生效（PowerShell）**
+
+```powershell
+$env:SMTP_ENABLED = "true"
+$env:SMTP_USERNAME = "your_email@qq.com"
+$env:SMTP_PASSWORD = "你的16位SMTP授权码"
+$env:SMTP_SENDER_NAME = "策知系统"
+```
+
+**方式二：持久生效（Windows 用户环境变量）**
+
+```powershell
+setx SMTP_ENABLED "true"
+setx SMTP_USERNAME "your_email@qq.com"
+setx SMTP_PASSWORD "你的16位SMTP授权码"
+setx SMTP_SENDER_NAME "策知系统"
+```
+
+> `setx` 设置后需**重开终端**（或重新登录）才会生效，然后重启后端进程。
+
+配置完成并启动后端后，注册账号即可收到验证码邮件，采集任务通知也会发送到对应用户邮箱。若未配置或配置错误，后端日志会提示邮件服务未启用，不影响采集与 AI 分析功能。
+
 ## 单机服务器部署
 
 当前版本可采用“Vue 静态文件 + 单个 FastAPI 进程 + SQLite + 本地 PDF 目录”的方式部署。构建前端：
